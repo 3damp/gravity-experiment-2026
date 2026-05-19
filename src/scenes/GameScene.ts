@@ -7,8 +7,6 @@ const G = 0.01;
 const AIR_FRICTION = 0.00012;
 
 export class GameScene extends Phaser.Scene {
-  private spawnX!: number;
-  private spawnY!: number;
 
   private planets!: Planet[];
   private ship!: Ship;
@@ -18,25 +16,11 @@ export class GameScene extends Phaser.Scene {
   }
 
   create(): void {
-    const { width, height } = this.scale;
-
-    this.spawnX = width * 0.5;
-    this.spawnY = height * 0.5 - 220;
-
     this.planets = [
-      new Planet(this, 0,  0,  600, 10, 0x2255bb),
-    //   new Planet(this, width * 0.25, height * 0.35, 35,  400, 0x883311),
+      new Planet(this, 0,  0,  600, 10, 0xaa6544),
     ];
 
-    this.ship = new Ship(this, this.spawnX, this.spawnY);
-
-    this.add
-      .text(16, 16, 'W / ↑  Thrust      A D / ← →  Rotate', {
-        color: '#ffffff',
-        fontSize: '13px',
-      })
-      .setAlpha(0.35)
-      .setScrollFactor(0);
+    this.ship = new Ship(this, 0, -1000);
 
     this.setupZoom();
   }

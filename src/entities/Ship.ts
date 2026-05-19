@@ -1,7 +1,6 @@
 import Phaser from 'phaser';
 
-const THRUST = 6e-4;
-const MAX_SPEED = 9;
+const THRUST = 0.0001;
 const TORQUE = 0.0008;
 const ANGULAR_DAMPING = 0.015;
 
@@ -12,7 +11,7 @@ export class Ship {
   private readonly gfx: Phaser.GameObjects.Graphics;
   private readonly flameGfx: Phaser.GameObjects.Graphics;
   private readonly cursors: Phaser.Types.Input.Keyboard.CursorKeys;
-  private readonly keys: { w: Phaser.Input.Keyboard.Key; a: Phaser.Input.Keyboard.Key; d: Phaser.Input.Keyboard.Key };
+  private readonly keys: { w: Phaser.Input.Keyboard.Key; a: Phaser.Input.Keyboard.Key; s: Phaser.Input.Keyboard.Key; d: Phaser.Input.Keyboard.Key };
 
   constructor(scene: Phaser.Scene, x: number, y: number) {
     this.scene = scene;
@@ -36,6 +35,7 @@ export class Ship {
     this.keys = {
       w: scene.input.keyboard!.addKey(Phaser.Input.Keyboard.KeyCodes.W),
       a: scene.input.keyboard!.addKey(Phaser.Input.Keyboard.KeyCodes.A),
+      s: scene.input.keyboard!.addKey(Phaser.Input.Keyboard.KeyCodes.S),
       d: scene.input.keyboard!.addKey(Phaser.Input.Keyboard.KeyCodes.D),
     };
   }
@@ -44,6 +44,7 @@ export class Ship {
     const { body, cursors, keys, scene } = this;
     const angle = body.angle;
     const thrusting = cursors.up.isDown || keys.w.isDown;
+    const reversing = cursors.down.isDown || keys.s.isDown;
 
     // Rotation — torque-based so collisions can tumble the ship
     // Always counter the current spin (angular damping)
@@ -58,22 +59,27 @@ export class Ship {
     // angle=0 → facing up → force (0, -1)
     if (thrusting) {
       scene.matter.applyForce(body, {
-        x: Math.sin(angle) * THRUST,
+        x:  Math.sin(angle) * THRUST,
         y: -Math.cos(angle) * THRUST,
+      });
+    } else if (reversing) {
+      scene.matter.applyForce(body, {
+        x: -Math.sin(angle) * THRUST,
+        y:  Math.cos(angle) * THRUST,
       });
     }
 
     // Hard speed cap
-    const vel = body.velocity;
-    const speed = Math.hypot(vel.x, vel.y);
-    if (speed > MAX_SPEED) {
-      scene.matter.setVelocity(body, (vel.x / speed) * MAX_SPEED, (vel.y / speed) * MAX_SPEED);
-    }
+    // const vel = body.velocity;
+    // const speed = Math.hypot(vel.x, vel.y);
+    // if (speed > MAX_SPEED) {
+    //   scene.matter.setVelocity(body, (vel.x / speed) * MAX_SPEED, (vel.y / speed) * MAX_SPEED);
+    // }
 
-    this.draw(thrusting, angle);
+    this.draw(thrusting, reversing, angle);
   }
 
-  private draw(thrusting: boolean, angle: number): void {
+  private draw(thrusting: boolean, reversing: boolean, angle: number): void {
     const { x, y } = this.body.position;
     const cos = Math.cos(angle);
     const sin = Math.sin(angle);
@@ -107,13 +113,21 @@ export class Ship {
       const fl  = t(-4, 8);
       const fr  = t( 4, 8);
       const ft  = t( 0, 8 + len);
-
       this.flameGfx.fillStyle(0xff6600, 0.9);
       this.flameGfx.fillTriangle(fl.x, fl.y, fr.x, fr.y, ft.x, ft.y);
-
       const ftInner = t(0, 8 + len * 0.5);
       this.flameGfx.fillStyle(0xffee44, 0.75);
       this.flameGfx.fillTriangle(fl.x, fl.y, fr.x, fr.y, ftInner.x, ftInner.y);
+    } else if (reversing) {
+      const len = 6 + Math.random() * 7;
+      const rl  = t(-3, -16);
+      const rr  = t( 3, -16);
+      const rt  = t( 0, -16 - len);
+      this.flameGfx.fillStyle(0xff6600, 0.9);
+      this.flameGfx.fillTriangle(rl.x, rl.y, rr.x, rr.y, rt.x, rt.y);
+      const rtInner = t(0, -16 - len * 0.5);
+      this.flameGfx.fillStyle(0xffee44, 0.75);
+      this.flameGfx.fillTriangle(rl.x, rl.y, rr.x, rr.y, rtInner.x, rtInner.y);
     }
   }
 
