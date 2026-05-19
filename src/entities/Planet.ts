@@ -16,7 +16,7 @@ export class Planet {
     color = 0x3366cc,
   ) {
     this.radius = radius;
-    this.atmosphereRadius = radius * 3.5;
+    this.atmosphereRadius = radius + radius * 0.2;
     this.gravitationalMass = gravitationalMass;
 
     this.body = scene.matter.add.circle(x, y, radius, {
