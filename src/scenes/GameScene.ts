@@ -17,10 +17,10 @@ export class GameScene extends Phaser.Scene {
 
   create(): void {
     this.planets = [
-      new Planet(this, 0,  0,  600, 10, 0xaa6544),
+      new Planet(this, 0,  0,  2000, 1000, 0xaa6544),
     ];
 
-    this.ship = new Ship(this, 0, -1000);
+    this.ship = new Ship(this, 0, -2300);
 
     this.setupZoom();
   }
