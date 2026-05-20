@@ -2,8 +2,8 @@ import Phaser from "phaser";
 import { Planet } from "../entities/Planet";
 import { Ship } from "../entities/Ship";
 
-const MIN_ZOOM = 0.05;
-const MAX_ZOOM = 4;
+const MIN_ZOOM = 0.01;
+const MAX_ZOOM = 2;
 
 /** Gravitational constant — tune this to change overall gravity strength */
 const G = 0.00005;
@@ -40,7 +40,7 @@ export class GameScene extends Phaser.Scene {
   create(): void {
     this.planets = [new Planet(this, 0, 0, 4000, 4000, 0xaa6544)];
 
-    this.ship = new Ship(this, 0, -4300);
+    this.ship = new Ship(this, 0, -4020);
     this.surfaceTileGfx = this.add.graphics();
     this.debugText = this.add.text(12, 12, '', {
       fontFamily: 'monospace',
@@ -59,10 +59,10 @@ export class GameScene extends Phaser.Scene {
     // --- Slider ---
     const slider = document.createElement("input");
     slider.type = "range";
-    slider.min = String(MIN_ZOOM);
-    slider.max = String(MAX_ZOOM);
+    slider.min = String(0);
+    slider.max = String(1);
     slider.step = "0.01";
-    slider.value = "1";
+    slider.value = "0.9";
     Object.assign(slider.style, {
       position: "fixed",
       bottom: "24px",
@@ -72,9 +72,16 @@ export class GameScene extends Phaser.Scene {
       cursor: "pointer",
       zIndex: "10",
     });
+
+    const mapValueToZoom = (value: number) => {
+      const normalized = (value - parseFloat(slider.min)) / (parseFloat(slider.max) - parseFloat(slider.min));
+      const zoom = MIN_ZOOM * Math.pow(MAX_ZOOM / MIN_ZOOM, normalized);
+      return zoom;
+    };
+
     document.body.appendChild(slider);
     slider.addEventListener("input", () => {
-      cam.zoom = parseFloat(slider.value);
+      cam.zoom = mapValueToZoom(parseFloat(slider.value));
     });
 
     // --- Mouse wheel ---
@@ -83,14 +90,15 @@ export class GameScene extends Phaser.Scene {
       "wheel",
       (_p: unknown, _g: unknown, _dx: unknown, dy: number) => {
         const next = Phaser.Math.Clamp(
-          cam.zoom - dy * 0.001,
-          MIN_ZOOM,
-          MAX_ZOOM,
+          parseFloat(slider.value) - dy * 0.0005,
+          0,
+          1,
         );
-        cam.zoom = next;
+        cam.zoom = mapValueToZoom(next);
         slider.value = String(next);
       },
     );
+    cam.zoom = mapValueToZoom(parseFloat(slider.value));
 
     // Clean up the DOM element if the scene ever shuts down
     this.events.once("shutdown", () => slider.remove());
