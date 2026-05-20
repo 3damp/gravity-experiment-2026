@@ -6,6 +6,7 @@ export class Planet {
   readonly atmosphereRadius: number;
   /** Mass used only for the custom gravity formula — static bodies have Infinity physics mass */
   readonly gravitationalMass: number;
+  readonly color: number;
 
   constructor(
     scene: Phaser.Scene,
@@ -18,11 +19,12 @@ export class Planet {
     this.radius = radius;
     this.atmosphereRadius = radius + radius * 0.1;
     this.gravitationalMass = gravitationalMass;
+    this.color = color;
 
     this.body = scene.matter.add.circle(x, y, radius, {
       isStatic: true,
+      isSensor: true,  // collisions handled by surface tile strip
       label: 'planet',
-      restitution: 0.2,
     }) as unknown as MatterJS.BodyType;
 
     // --- Visual ---
