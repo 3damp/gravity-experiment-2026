@@ -1,8 +1,8 @@
 import Phaser from 'phaser';
 
 const THRUST = 0.00006;
-const TORQUE = 0.0008;
-const ANGULAR_DAMPING = 0.015;
+const TORQUE = 0.0003;
+const ANGULAR_DAMPING = 0.002;
 
 export class Ship {
   readonly body: MatterJS.BodyType;

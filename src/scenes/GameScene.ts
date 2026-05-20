@@ -9,6 +9,8 @@ const MAX_ZOOM = 4;
 const G = 0.00005;
 const AIR_FRICTION = 0.00001;
 const AIR_DENSITY_PER_UNIT = 0.0005;
+/** How strongly the atmosphere rotates the ship to align with its velocity */
+const AERO_TORQUE = 0.00002;
 
 // ── Surface tile colliders ────────────────────────────────────────────────────
 // The planet circle is a sensor; a strip of thin rectangles approximates the
@@ -266,6 +268,16 @@ export class GameScene extends Phaser.Scene {
 
       // Angular drag in atmosphere
       body.torque -= body.angularVelocity * 0.04 * clamped;
+
+      // Weathervane: nudge the ship to align its nose with the velocity vector
+      if (speed > 0.0001) {
+        const velAngle     = Math.atan2(vely, velx);          // standard math angle of velocity
+        const headingAngle = body.angle - Math.PI / 2;        // ship nose in same convention
+        let   diff         = velAngle - headingAngle;
+        // Normalise to [-π, π] so we always take the shortest arc
+        diff = ((diff + Math.PI) % (Math.PI * 2) + Math.PI * 2) % (Math.PI * 2) - Math.PI;
+        body.torque += diff * speed * speed * AERO_TORQUE * clamped;
+      }
     }
   }
 
