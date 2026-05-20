@@ -6,7 +6,7 @@ import {
   MIN_ZOOM, MAX_ZOOM,
   G,
   AIR_FRICTION, AIR_DENSITY_PER_UNIT, AERO_TORQUE,
-  TILE_COUNT, TILE_ARC, TILE_THICKNESS_FRAC,
+  TILE_COUNT, TILE_WIDTH, TILE_THICKNESS_FRAC,
   TILE_NOISE_ANGLE, TILE_NOISE_RADIAL,
   TILE_ACTIVATE_FRAC, TILE_RADIAL_OFFSET,
 } from "../constants";
@@ -168,9 +168,10 @@ export class GameScene extends Phaser.Scene {
       return;
     }
 
-    const step = TILE_ARC / TILE_COUNT;
+    // step is the arc angle between tile centres; derived from world-unit tile width
+    const step  = 0.8 * TILE_WIDTH / planet.radius;
     const tileH = planet.radius * TILE_THICKNESS_FRAC;
-    const tileW = 2 * planet.radius * Math.sin(step / 2) * 1.15;
+    const tileW = TILE_WIDTH;
     const shipAngle = Math.atan2(sy - py, sx - px);
 
     // Desired window: TILE_COUNT consecutive integer slots centred on the ship

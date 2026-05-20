@@ -15,10 +15,10 @@ export const AERO_TORQUE = 0.00002;
 // ── Surface tile colliders ────────────────────────────────────────────────────
 // The planet circle is a sensor; a strip of thin rectangles approximates the
 // local surface and handles all ship–ground collisions.
-export const TILE_COUNT          = 11;
-export const TILE_ARC            = Math.PI * 0.3; // arc covered by the tile strip; centred on ship
+export const TILE_COUNT          = 20;
+export const TILE_WIDTH          = 200;            // world-unit width of each tile (sets arc coverage)
 export const TILE_THICKNESS_FRAC = 0.05;          // height = radius × this
-export const TILE_NOISE_ANGLE    = 0.05;          // ± radian rotation per tile
+export const TILE_NOISE_ANGLE    = 0.03;          // ± radian rotation per tile
 export const TILE_NOISE_RADIAL   = 0.001;         // ± fraction-of-radius height offset
 export const TILE_ACTIVATE_FRAC  = 1.2;           // activate when dist < radius × this
 export const TILE_RADIAL_OFFSET  = 5;             // extra outward offset in world units
