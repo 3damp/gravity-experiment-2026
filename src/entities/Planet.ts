@@ -17,7 +17,7 @@ export class Planet {
     color = 0xdd88cc,
   ) {
     this.radius = radius;
-    this.atmosphereRadius = radius + radius * 0.1;
+    this.atmosphereRadius = radius + radius * 0.2;
     this.gravitationalMass = gravitationalMass;
     this.color = color;
 

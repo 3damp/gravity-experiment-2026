@@ -1,6 +1,6 @@
 import Phaser from 'phaser';
 
-const THRUST = 0.0001;
+const THRUST = 0.00006;
 const TORQUE = 0.0008;
 const ANGULAR_DAMPING = 0.015;
 
