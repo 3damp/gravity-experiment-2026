@@ -274,8 +274,8 @@ export class GameScene extends Phaser.Scene {
     const speed = Math.hypot(vel.x, vel.y);
     const gMag  = Math.hypot(this.lastGravityForce.x, this.lastGravityForce.y);
     const dMag  = Math.hypot(this.lastDragForce.x, this.lastDragForce.y);
-    const fmt   = (n: number) => (Math.abs(n) < 0.001 ? 0 : n).toFixed(3).padStart(10);
-    const fmtM  = (n: number) => (Math.abs(n) < 0.001 ? 0 : n).toFixed(3);
+    const fmt   = (n: number) =>  (Math.round(n * 100) / 100).toFixed(2).padStart(6);
+    const fmtM  = (n: number) => (Math.round(n * 100) / 100).toFixed(2);
     const cam  = this.cameras.main;
     const zoom = cam.zoom;
     // Phaser zooms around the camera centre, so the world coord of screen (0,0) is:
@@ -285,9 +285,9 @@ export class GameScene extends Phaser.Scene {
     this.debugText.setScale(1 / zoom);
     this.debugText.setPosition(worldLeft + 12 / zoom, worldTop + 12 / zoom);
     this.debugText.setText([
-      `velocity  vx ${fmt(vel.x)}  vy ${fmt(vel.y)}  |v| ${fmtM(speed)}`,
-      `gravity   fx ${fmt(this.lastGravityForce.x)}  fy ${fmt(this.lastGravityForce.y)}  |F| ${fmtM(gMag)}`,
-      `drag      fx ${fmt(this.lastDragForce.x)}  fy ${fmt(this.lastDragForce.y)}  |F| ${fmtM(dMag)}`,
+      `velocity  vx ${fmt(vel.x)}   vy ${fmt(vel.y)}   |v| ${fmtM(speed)}`,
+      `gravity   fx ${fmt(this.lastGravityForce.x)}   fy ${fmt(this.lastGravityForce.y)}   |F| ${fmtM(gMag)}`,
+      `drag      fx ${fmt(this.lastDragForce.x)}   fy ${fmt(this.lastDragForce.y)}   |F| ${fmtM(dMag)}`,
     ]);
   }
 }
