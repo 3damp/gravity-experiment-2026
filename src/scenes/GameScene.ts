@@ -1,27 +1,15 @@
 import Phaser from "phaser";
 import { Planet } from "../entities/Planet";
 import { Ship } from "../entities/Ship";
-
-const MIN_ZOOM = 0.01;
-const MAX_ZOOM = 2;
-
-/** Gravitational constant — tune this to change overall gravity strength */
-const G = 0.00005;
-const AIR_FRICTION = 0.00001;
-const AIR_DENSITY_PER_UNIT = 0.0005;
-/** How strongly the atmosphere rotates the ship to align with its velocity */
-const AERO_TORQUE = 0.00002;
-
-// ── Surface tile colliders ────────────────────────────────────────────────────
-// The planet circle is a sensor; a strip of thin rectangles approximates the
-// local surface and handles all ship–ground collisions.
-const TILE_COUNT = 11;
-const TILE_ARC = Math.PI * 0.3; // arc covered by the tile strip; centered on ship, extends in both directions
-const TILE_THICKNESS_FRAC = 0.05; // height = radius × this
-const TILE_NOISE_ANGLE = 0.05; // ± radian rotation per tile
-const TILE_NOISE_RADIAL = 0.001; // ± fraction-of-radius height offset
-const TILE_ACTIVATE_FRAC = 1.2; // activate when dist < radius × this
-const TILE_RADIAL_OFFSET = 5; // extra outward offset in world units
+import {
+  DEBUG,
+  MIN_ZOOM, MAX_ZOOM,
+  G,
+  AIR_FRICTION, AIR_DENSITY_PER_UNIT, AERO_TORQUE,
+  TILE_COUNT, TILE_ARC, TILE_THICKNESS_FRAC,
+  TILE_NOISE_ANGLE, TILE_NOISE_RADIAL,
+  TILE_ACTIVATE_FRAC, TILE_RADIAL_OFFSET,
+} from "../constants";
 
 export class GameScene extends Phaser.Scene {
   private planets!: Planet[];
@@ -30,8 +18,9 @@ export class GameScene extends Phaser.Scene {
   private surfaceTiles: { body: MatterJS.BodyType; slotIndex: number }[] = [];
   private surfaceTileGfx!: Phaser.GameObjects.Graphics;
   private debugText!: Phaser.GameObjects.Text;
+  private hudText!: Phaser.GameObjects.Text;
   private lastGravityForce = { x: 0, y: 0 };
-  private lastDragForce    = { x: 0, y: 0 };
+  private lastDragForce = { x: 0, y: 0 };
 
   constructor() {
     super({ key: "GameScene" });
@@ -42,13 +31,28 @@ export class GameScene extends Phaser.Scene {
 
     this.ship = new Ship(this, 0, -4020);
     this.surfaceTileGfx = this.add.graphics();
-    this.debugText = this.add.text(12, 12, '', {
-      fontFamily: 'monospace',
-      fontSize:   '13px',
-      color:      '#ffffff',
-      backgroundColor: '#00000099',
-      padding: { x: 8, y: 6 },
-    }).setDepth(100);
+    if (DEBUG) {
+      this.debugText = this.add
+        .text(12, 12, "", {
+          fontFamily: "monospace",
+          fontSize: "13px",
+          color: "#ffffff",
+          backgroundColor: "#00000099",
+          padding: { x: 8, y: 6 },
+        })
+        .setDepth(100);
+    }
+
+    this.hudText = this.add
+      .text(0, 0, "", {
+        fontFamily: "monospace",
+        fontSize: "14px",
+        color: "#e8d5b0",
+        backgroundColor: "#00000099",
+        padding: { x: 10, y: 7 },
+        align: "right",
+      })
+      .setDepth(100);
 
     this.setupZoom();
   }
@@ -74,7 +78,9 @@ export class GameScene extends Phaser.Scene {
     });
 
     const mapValueToZoom = (value: number) => {
-      const normalized = (value - parseFloat(slider.min)) / (parseFloat(slider.max) - parseFloat(slider.min));
+      const normalized =
+        (value - parseFloat(slider.min)) /
+        (parseFloat(slider.max) - parseFloat(slider.min));
       const zoom = MIN_ZOOM * Math.pow(MAX_ZOOM / MIN_ZOOM, normalized);
       return zoom;
     };
@@ -112,7 +118,7 @@ export class GameScene extends Phaser.Scene {
     // this.wrapShip();
     const { x, y } = this.ship.body.position;
     this.cameras.main.centerOn(x, y);
-    this.updateDebugText();
+    this.updateUIText();
   }
 
   /** Pull the ship toward every planet: F = G·M / r² */
@@ -279,35 +285,55 @@ export class GameScene extends Phaser.Scene {
 
       // Weathervane: nudge the ship to align its nose with the velocity vector
       if (speed > 0.0001) {
-        const velAngle     = Math.atan2(vely, velx);          // standard math angle of velocity
-        const headingAngle = body.angle - Math.PI / 2;        // ship nose in same convention
-        let   diff         = velAngle - headingAngle;
+        const velAngle = Math.atan2(vely, velx); // standard math angle of velocity
+        const headingAngle = body.angle - Math.PI / 2; // ship nose in same convention
+        let diff = velAngle - headingAngle;
         // Normalise to [-π, π] so we always take the shortest arc
-        diff = ((diff + Math.PI) % (Math.PI * 2) + Math.PI * 2) % (Math.PI * 2) - Math.PI;
+        diff =
+          ((((diff + Math.PI) % (Math.PI * 2)) + Math.PI * 2) % (Math.PI * 2)) -
+          Math.PI;
         body.torque += diff * speed * speed * AERO_TORQUE * clamped;
       }
     }
   }
 
-  private updateDebugText(): void {
-    const vel   = this.ship.body.velocity;
+  private updateUIText(): void {
+    const vel = this.ship.body.velocity;
     const speed = Math.hypot(vel.x, vel.y);
-    const gMag  = Math.hypot(this.lastGravityForce.x, this.lastGravityForce.y);
-    const dMag  = Math.hypot(this.lastDragForce.x, this.lastDragForce.y);
-    const fmt   = (n: number) =>  (Math.round(n * 100) / 100).toFixed(2).padStart(6);
-    const fmtM  = (n: number) => (Math.round(n * 100) / 100).toFixed(2);
-    const cam  = this.cameras.main;
+    const gMag = Math.hypot(this.lastGravityForce.x, this.lastGravityForce.y);
+    const dMag = Math.hypot(this.lastDragForce.x, this.lastDragForce.y);
+    const fmt = (n: number) => (Math.round(n * 10) / 10).toFixed(1).padStart(6);
+    const fmtM = (n: number) => (Math.round(n * 10) / 10).toFixed(1);
+    const fmtInt = (n: number) => Math.round(n);
+    const cam = this.cameras.main;
     const zoom = cam.zoom;
     // Phaser zooms around the camera centre, so the world coord of screen (0,0) is:
     //   scrollX + width/2 * (1 - 1/zoom)
-    const worldLeft = cam.scrollX + cam.width  * 0.5 * (1 - 1 / zoom);
-    const worldTop  = cam.scrollY + cam.height * 0.5 * (1 - 1 / zoom);
-    this.debugText.setScale(1 / zoom);
-    this.debugText.setPosition(worldLeft + 12 / zoom, worldTop + 12 / zoom);
-    this.debugText.setText([
-      `velocity  vx ${fmt(vel.x)}   vy ${fmt(vel.y)}   |v| ${fmtM(speed)}`,
-      `gravity   fx ${fmt(this.lastGravityForce.x)}   fy ${fmt(this.lastGravityForce.y)}   |F| ${fmtM(gMag)}`,
-      `drag      fx ${fmt(this.lastDragForce.x)}   fy ${fmt(this.lastDragForce.y)}   |F| ${fmtM(dMag)}`,
-    ]);
+    const worldLeft = cam.scrollX + cam.width * 0.5 * (1 - 1 / zoom);
+    const worldTop = cam.scrollY + cam.height * 0.5 * (1 - 1 / zoom);
+
+    if (DEBUG) {
+      this.debugText.setScale(1 / zoom);
+      this.debugText.setPosition(worldLeft + 12 / zoom, worldTop + 12 / zoom);
+      this.debugText.setText([
+        `velocity  vx ${fmt(vel.x)}   vy ${fmt(vel.y)}   |v| ${fmtM(speed)}`,
+        `gravity   fx ${fmt(this.lastGravityForce.x)}   fy ${fmt(this.lastGravityForce.y)}   |F| ${fmtM(gMag)}`,
+        `drag      fx ${fmt(this.lastDragForce.x)}   fy ${fmt(this.lastDragForce.y)}   |F| ${fmtM(dMag)}`,
+      ]);
+    }
+
+    // HUD — top-right, right-aligned
+    const CONVERSION = 10 * 3600 * 0.001; // convert physics units to something more human-readable
+    const hudLines = [
+      `${fmtInt(speed * CONVERSION)} km/h`,
+      `${fmtM(dMag * CONVERSION)}`,
+    ];
+    this.hudText.setText(hudLines);
+    this.hudText.setScale(1 / zoom);
+    const hudW = this.hudText.width / zoom;
+    this.hudText.setPosition(
+      worldLeft + cam.width / zoom - hudW - 12 / zoom,
+      worldTop + 12 / zoom,
+    );
   }
 }
