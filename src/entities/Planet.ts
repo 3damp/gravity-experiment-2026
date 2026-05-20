@@ -4,8 +4,6 @@ export class Planet {
   readonly body: MatterJS.BodyType;
   readonly radius: number;
   readonly atmosphereRadius: number;
-  /** Mass used only for the custom gravity formula — static bodies have Infinity physics mass */
-  readonly gravitationalMass: number;
   readonly color: number;
 
   constructor(
@@ -13,12 +11,10 @@ export class Planet {
     x: number,
     y: number,
     radius: number,
-    gravitationalMass: number,
     color = 0xdd88cc,
   ) {
     this.radius = radius;
     this.atmosphereRadius = radius + radius * 0.2;
-    this.gravitationalMass = gravitationalMass;
     this.color = color;
 
     this.body = scene.matter.add.circle(x, y, radius, {

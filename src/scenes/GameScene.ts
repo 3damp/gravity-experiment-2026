@@ -27,7 +27,7 @@ export class GameScene extends Phaser.Scene {
   }
 
   create(): void {
-    this.planets = [new Planet(this, 0, 0, 4000, 4000, 0xaa6544)];
+    this.planets = [new Planet(this, 0, 0, 4000, 0xaa6544)];
 
     this.ship = new Ship(this, 0, -4020);
     this.surfaceTileGfx = this.add.graphics();
