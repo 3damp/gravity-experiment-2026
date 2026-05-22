@@ -5,6 +5,7 @@ export class Planet {
   readonly radius: number;
   readonly atmosphereRadius: number;
   readonly color: number;
+  readonly gfx: Phaser.GameObjects.Graphics;
 
   constructor(
     scene: Phaser.Scene,
@@ -23,28 +24,28 @@ export class Planet {
       label: 'planet',
     }) as unknown as MatterJS.BodyType;
 
-    // --- Visual ---
-    const gfx = scene.add.graphics();
+    // Visual drawn at local origin so gfx.setPosition() moves the whole thing
+    this.gfx = scene.add.graphics();
+    this.gfx.setPosition(x, y);
 
     // Atmosphere: concentric rings fading out
     const steps = 10;
     for (let i = steps; i >= 1; i--) {
-      const t = i / steps; // 1 at surface edge, ~0 at atmo edge
+      const t = i / steps;
       const r = radius + (this.atmosphereRadius - radius) * (1 - t);
-      gfx.fillStyle(color, 0.1 * t);
-      gfx.fillCircle(x, y, r);
+      this.gfx.fillStyle(color, 0.1 * t);
+      this.gfx.fillCircle(0, 0, r);
     }
 
-    // // Soft outer glow
-    // gfx.fillStyle(color, 0.12);
-    // gfx.fillCircle(x, y, radius + 18);
-
     // Planet body
-    gfx.fillStyle(color, 1);
-    gfx.fillCircle(x, y, radius);
+    this.gfx.fillStyle(color, 1);
+    this.gfx.fillCircle(0, 0, radius);
+  }
 
-    // Highlight (top-left)
-    // gfx.fillStyle(0xffffff, 0.1);
-    // gfx.fillCircle(x - radius * 0.28, y - radius * 0.28, radius * 0.52);
+  /** Reposition the planet (body + visual together). */
+  setPosition(x: number, y: number): void {
+    this.body.position.x = x;
+    this.body.position.y = y;
+    this.gfx.setPosition(x, y);
   }
 }

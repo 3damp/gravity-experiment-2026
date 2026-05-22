@@ -20,8 +20,12 @@ export const TILE_WIDTH          = 200;            // world-unit width of each t
 export const TILE_THICKNESS_FRAC = 0.05;          // height = radius × this
 export const TILE_NOISE_ANGLE    = 0.03;          // ± radian rotation per tile
 export const TILE_NOISE_RADIAL   = 0.001;         // ± fraction-of-radius height offset
-export const TILE_ACTIVATE_FRAC  = 1.2;           // activate when dist < radius × this
+export const TILE_ACTIVATE_FRAC  = 3.0;           // activate when dist < radius × this
 export const TILE_RADIAL_OFFSET  = 5;             // extra outward offset in world units
 
 // ── Debug ─────────────────────────────────────────────────────────────────────
 export const DEBUG = true; // set to true to show debug overlay
+
+// ── Orbiting planet ───────────────────────────────────────────────────────────
+export const ORBIT_RADIUS = 14000; // distance from planet 1 centre, world units
+export const ORBIT_SPEED  = 0.0003; // radians per frame
