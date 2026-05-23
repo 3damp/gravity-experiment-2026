@@ -81,7 +81,7 @@ export class GameScene extends Phaser.Scene {
       bottom: "24px",
       right: "24px",
       width: "130px",
-      accentColor: "#4488cc",
+      accentColor: "#ffffff",
       cursor: "pointer",
       zIndex: "10",
     });
